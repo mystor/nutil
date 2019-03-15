@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+
+import sys
+from pathlib import Path
+from argparse import ArgumentParser
+
+NRUN = Path.home() / '.local' / 'bin' / 'nrun'
+
+def wrapper(path):
+    return f"#!/bin/sh {NRUN}\n{Path(path).resolve()}\n"
+
+def main(argv):
+    parser = ArgumentParser('ninstall')
+    parser.add_argument('path')
+    parser.add_argument('--rename')
+    args = parser.parse_args(argv)
+
+    assert "'" not in args.path, "no quotes!"
+
+    name = args.rename or Path(args.path).name
+    target = Path.home() / '.local' / 'bin' / name
+    print(f"Installing {target}")
+
+    with open(target, 'w') as f:
+        f.write(wrapper(args.path))
+    target.chmod(0o755)
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
